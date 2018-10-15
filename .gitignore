@@ -1,3 +1,5 @@
+*.iml
+.idea
 conf/data/
 conf/logs/
 yarn-error.log
