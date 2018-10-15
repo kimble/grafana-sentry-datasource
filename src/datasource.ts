@@ -26,15 +26,9 @@ export class SentryDatasource {
 
     const requests = [];
     options.targets.forEach(target => {
-      var url, request;
-      if (target.projectName === "__all__") {
-        url = '/organizations/'+ this.organization +'/stats//';
-      }
-      else {
-        url = '/projects/'+ this.organization +'/' + target.projectName + '/stats//';
-      }
+      const url = '/api/0/projects/'+ this.organization +'/' + target.projectName + '/stats//';
 
-      request = this.doRequest({
+      const request = this.doRequest({
         url: url,
         params: params,
         method: 'GET'
@@ -44,6 +38,7 @@ export class SentryDatasource {
           "datapoints": data.data.map(item => ([item[1], item[0] * 1000]))
         }
       });
+
       requests.push(request);
     });
 
@@ -54,18 +49,27 @@ export class SentryDatasource {
     });
   }
 
+  getProjects() {
+    return this.doRequest({
+      url: '/api/0/organizations/' + this.organization +'/projects//',
+      method: 'GET',
+    }).then(result => {
+      const items = result.data.map(item => ({text: item.name, value: item.slug}));
+      return _.orderBy(items, ['text'], ['asc']);
+    });
+  }
 
   annotationQuery(options) {
+    console.error("Ignoring annotation query", options);
   }
 
   metricFindQuery(query) {
     return this.doRequest({
-      url: '/projects//',
+      url: '/api/0/organizations/' + this.organization +'/projects//',
       method: 'GET',
     }).then(result => {
       var items = result.data.map(item => ({text: item.name, value: item.slug}));
       items = _.orderBy(items, ['text'], ['asc']);
-      items.unshift({text: "All projects", value: "__all__"});
       return items;
     });
   }
