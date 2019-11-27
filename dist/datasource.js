@@ -28,14 +28,8 @@ System.register(["lodash"], function(exports_1) {
                     };
                     var requests = [];
                     options.targets.forEach(function (target) {
-                        var url, request;
-                        if (target.projectName === "__all__") {
-                            url = '/organizations/' + _this.organization + '/stats//';
-                        }
-                        else {
-                            url = '/projects/' + _this.organization + '/' + target.projectName + '/stats//';
-                        }
-                        request = _this.doRequest({
+                        var url = '/api/0/projects/' + _this.organization + '/' + target.projectName + '/stats//';
+                        var request = _this.doRequest({
                             url: url,
                             params: params,
                             method: 'GET'
@@ -53,34 +47,49 @@ System.register(["lodash"], function(exports_1) {
                         };
                     });
                 };
+                SentryDatasource.prototype.getProjects = function () {
+                    return this.doRequest({
+                        url: '/api/0/organizations/' + this.organization + '/projects//',
+                        method: 'GET',
+                    }).then(function (result) {
+                        var items = result.data.map(function (item) { return ({ text: item.name, value: item.slug }); });
+                        return lodash_1.default.orderBy(items, ['text'], ['asc']);
+                    });
+                };
                 SentryDatasource.prototype.annotationQuery = function (options) {
+                    console.error("Ignoring annotation query", options);
                 };
                 SentryDatasource.prototype.metricFindQuery = function (query) {
                     return this.doRequest({
-                        url: '/projects//',
+                        url: '/api/0/organizations/' + this.organization + '/projects//',
                         method: 'GET',
                     }).then(function (result) {
                         var items = result.data.map(function (item) { return ({ text: item.name, value: item.slug }); });
                         items = lodash_1.default.orderBy(items, ['text'], ['asc']);
-                        items.unshift({ text: "All projects", value: "__all__" });
                         return items;
                     });
                 };
                 SentryDatasource.prototype.doRequest = function (options) {
                     options.headers = {
-                        'Authorization': 'Bearer ' + this.authToken
+                        'Authorization': 'bearer ' + this.authToken
                     };
                     options.url = this.url + options.url;
                     return this.backendSrv.datasourceRequest(options);
                 };
                 SentryDatasource.prototype.testDatasource = function () {
                     return this.doRequest({
-                        url: '/',
+                        url: '/api/0/organizations/' + this.organization + "//",
                         method: 'GET',
                     }).then(function (response) {
                         if (response.status === 200) {
                             return { status: "success", message: "Data source is working", title: "Success" };
                         }
+                        else {
+                            return { status: "error", message: "Non-successful status code " + response.status, title: "Error" };
+                        }
+                    })
+                        .catch(function (err) {
+                        return { status: "error", message: "Error: " + JSON.stringify(err), title: "Error" };
                     });
                 };
                 return SentryDatasource;

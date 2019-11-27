@@ -1,30 +1,18 @@
-<query-editor-row query-ctrl="ctrl" class="generic-datasource-query-row" has-text-edit-mode="true">
-  <div class="gf-form-inline">
-
-    <div class="gf-form">
-      <label class="gf-form-label query-keyword width-7">Alias</label>
-      <gf-form-dropdown
-          class="width-15"
-          model="ctrl.target.projectName"
-          allow-custom="true"
-          lookup-text="true"
-          get-options="ctrl.getProjects($query)"
-          on-change="ctrl.onChangeInternal()">
-      </gf-form-dropdown>
+<query-editor-row query-ctrl="ctrl" can-collapse="false">
+  <div class="gf-form-group">
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-7">Project</label>
+        <gf-form-dropdown model="ctrl.target.projectName"
+                          allow-custom="true"
+                          lookup-text="true"
+                          get-options="ctrl.getProjects()"
+                          on-change="ctrl.onChangeInternal()">
+        </gf-form-dropdown>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
     </div>
-
-    <div class="gf-form">
-      <label class="gf-form-label query-keyword width-7">Alias</label>
-      <input type="text"
-          class="gf-form-input"
-          ng-model="ctrl.target.alias"
-          spellcheck='false'
-          ng-model-onblur
-          ng-change="ctrl.onChangeInternal()">
-    </div>
-
-    <div class="gf-form gf-form--grow">
-      <div class="gf-form-label gf-form-label--grow"></div>
-    </div>
-</div>
+  </div>
 </query-editor-row>

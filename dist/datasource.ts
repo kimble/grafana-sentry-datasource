@@ -18,23 +18,17 @@ export class SentryDatasource {
   }
 
   query(options) {
-    var params = {
+    const params = {
       'since': options.range.from._d.getTime() / 1000,
       'until': options.range.to._d.getTime() / 1000,
       'stat': 'received',
-    }
+    };
 
-    var requests = [];
+    const requests = [];
     options.targets.forEach(target => {
-      var url, request;
-      if (target.projectName === "__all__") {
-        url = '/organizations/'+ this.organization +'/stats//';
-      }
-      else {
-        url = '/projects/'+ this.organization +'/' + target.projectName + '/stats//';
-      }
+      const url = '/api/0/projects/'+ this.organization +'/' + target.projectName + '/stats//';
 
-      request = this.doRequest({
+      const request = this.doRequest({
         url: url,
         params: params,
         method: 'GET'
@@ -44,6 +38,7 @@ export class SentryDatasource {
           "datapoints": data.data.map(item => ([item[1], item[0] * 1000]))
         }
       });
+
       requests.push(request);
     });
 
@@ -54,39 +49,53 @@ export class SentryDatasource {
     });
   }
 
+  getProjects() {
+    return this.doRequest({
+      url: '/api/0/organizations/' + this.organization +'/projects//',
+      method: 'GET',
+    }).then(result => {
+      const items = result.data.map(item => ({text: item.name, value: item.slug}));
+      return _.orderBy(items, ['text'], ['asc']);
+    });
+  }
 
   annotationQuery(options) {
+    console.error("Ignoring annotation query", options);
   }
 
   metricFindQuery(query) {
     return this.doRequest({
-      url: '/projects//',
+      url: '/api/0/organizations/' + this.organization +'/projects//',
       method: 'GET',
     }).then(result => {
       var items = result.data.map(item => ({text: item.name, value: item.slug}));
       items = _.orderBy(items, ['text'], ['asc']);
-      items.unshift({text: "All projects", value: "__all__"})
       return items;
     });
   }
 
   doRequest(options) {
     options.headers = {
-      'Authorization': 'Bearer ' + this.authToken
-    }
+      'Authorization': 'bearer ' + this.authToken
+    };
     options.url = this.url + options.url;
-
     return this.backendSrv.datasourceRequest(options);
   }
 
   testDatasource() {
     return this.doRequest({
-      url: '/',
+      url: '/api/0/organizations/' + this.organization + "//", // Grafana backend seems to strip of one trailing /
       method: 'GET',
     }).then(response => {
       if (response.status === 200) {
         return { status: "success", message: "Data source is working", title: "Success" };
       }
+      else {
+        return { status: "error", message: "Non-successful status code " + response.status, title: "Error" };
+      }
+    })
+    .catch(err => {
+      return { status: "error", message: "Error: " + JSON.stringify(err), title: "Error" };
     });
   }
 }
