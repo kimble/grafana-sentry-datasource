@@ -12,6 +12,7 @@ export declare class SentryDatasource {
     query(options: any): Promise<{
         'data': any[];
     }>;
+    getProjects(): any;
     annotationQuery(options: any): void;
     metricFindQuery(query: any): any;
     doRequest(options: any): any;
